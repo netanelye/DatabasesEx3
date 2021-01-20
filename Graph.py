@@ -1,5 +1,6 @@
 class Graph:
     def __init__(self, listOfSchedule):
+        self.is_cycle = False
         self.colors = []
         self.stack = []
         self.numOfVertices = self.getTransactionNumber(listOfSchedule) + 1
@@ -22,12 +23,11 @@ class Graph:
                 self.adjacency_Matrix[row][col] = 0
 
     def buildGraph(self, listOfSchedule):
-        # self.init_matrix()
         for i in range(len(listOfSchedule)):
             i_transaction = listOfSchedule[i].get_transaction()
             i_item = listOfSchedule[i].get_item()
             i_operation = listOfSchedule[i].get_operation()
-            for j in range(i+1, len(listOfSchedule)):
+            for j in range(i + 1, len(listOfSchedule)):
                 j_transaction = listOfSchedule[j].get_transaction()
                 j_item = listOfSchedule[j].get_item()
                 j_operation = listOfSchedule[j].get_operation()
@@ -40,26 +40,29 @@ class Graph:
     def topological_sort(self):
         for vertex in range(1, self.numOfVertices):
             if self.colors[vertex] == "white":
-                if not self.visit(vertex):
-                    self.stack = None
+                if not self.is_cycle:
+                    self.visit(vertex)
+                else:
+                    return
 
     def visit(self, vertex):
         self.colors[vertex] = "gray"
-        for neighbor in range(1, self.numOfVertices):
-            if self.adjacency_Matrix[vertex][neighbor] == 1:
-                if self.colors[neighbor] == "gray":
-                    return False
-                if self.colors[neighbor] == "white":
-                    self.visit(neighbor)
-        self.colors[vertex] = "black"
-        self.stack.append(vertex)
-        return True
+        if not self.is_cycle:
+            for neighbor in range(1, self.numOfVertices):
+                if self.adjacency_Matrix[vertex][neighbor] == 1:
+                    if self.colors[neighbor] == "gray":
+                        self.is_cycle = True
+                        return
+                    if self.colors[neighbor] == "white":
+                        self.visit(neighbor)
+            self.colors[vertex] = "black"
+            self.stack.append(vertex)
 
     def get_topological_sort(self):
-        if self.stack is None:
+        if self.is_cycle:
             print("Cycle has been found!")
         else:
             while self.stack:
-                print(self.stack.pop())
+                print(self.stack.pop(), end='')
                 if self.stack:
-                    print("->")
+                    print("->", end='')
